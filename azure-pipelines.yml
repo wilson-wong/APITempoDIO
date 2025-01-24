@@ -1,0 +1,33 @@
+trigger:
+- main
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  pythonVersion: '3.9'
+  imageName: 'apitempodio'
+
+stages:
+- stage: Build
+  jobs:
+  - job: BuildAndTest
+    steps:
+    - task: UsePythonVersion@0
+      inputs:
+        versionSpec: '$(pythonVersion)'
+      displayName: 'Usar Python $(pythonVersion)'
+
+- stage: Package
+  jobs:
+  - job: BuildDocker
+    steps:
+    - task: Docker@2
+      inputs:
+        containerRegistry: 'acrapiww'
+        repository: '$(imageName)'
+        command: 'buildAndPush'
+        Dockerfile: '**/Dockerfile'
+        tags: |
+          $(Build.BuildId)
+          latest
